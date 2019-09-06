@@ -10,4 +10,5 @@ public class MainTest {
   void shouldAssertTrue() {
     assertTrue(true);
   }
+
 }

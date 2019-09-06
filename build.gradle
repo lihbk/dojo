@@ -14,7 +14,7 @@ sourceSets {
     }
     test {
         java {
-            srcDirs = ['test']
+            srcDirs = ['test', 'src/com.vanessagl2.dojo/test']
         }
     }
 }
@@ -33,5 +33,11 @@ dependencies {
             'org.junit.vintage:junit-vintage-engine:5.4.2'
     )
     testCompile "org.mockito:mockito-core:2.+"
+    //Libraries for unit testing
+    testCompile 'org.junit.jupiter:junit-jupiter-api:5.3.0'
+    testCompile 'org.mockito:mockito-junit-jupiter:2.19.0'
+    testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.3.0'
+    testCompile 'com.github.caryyu:spring-embedded-redis-server:1.1'
+    testCompile 'org.junit.jupiter:junit-jupiter-params:5.3.0'
 
 }

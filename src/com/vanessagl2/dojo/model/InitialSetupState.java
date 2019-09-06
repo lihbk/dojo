@@ -2,16 +2,17 @@ package com.vanessagl2.dojo.model;
 
 import java.util.ArrayList;
 
-public class NoMoneyAndProductState implements VendingMachineState {
+public class InitialSetupState implements VendingMachineState {
 
   public VendingMachine vendingMachine;
 
-  public NoMoneyAndProductState(VendingMachine vendingMachine) {
+  public InitialSetupState(VendingMachine vendingMachine) {
     this.vendingMachine = vendingMachine;
+    vendingMachine.updateDisplayMessage("$ CURRENT BALANCE IS 0. SETUP IS REQUIRED");
   }
 
   @Override
-  public void setupCurrentMoneyAndProductAmount(ArrayList<Coin> coins, ArrayList<Product> products) {
+  public void setupCurrentMoneyAndProductAmount(ArrayList<String> coins, ArrayList<String> products) {
     vendingMachine.insertCoins(coins);
     vendingMachine.insertProducts(products);
   }

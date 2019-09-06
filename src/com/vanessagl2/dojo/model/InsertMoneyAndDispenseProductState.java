@@ -11,7 +11,7 @@ public class InsertMoneyAndDispenseProductState implements VendingMachineState  
   }
 
   @Override
-  public void setupCurrentMoneyAndProductAmount(ArrayList<Coin> coins, ArrayList<Product> products) {
+  public void setupCurrentMoneyAndProductAmount(ArrayList<String> coins, ArrayList<String> products) {
 
   }
 
