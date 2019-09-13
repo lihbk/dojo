@@ -1,12 +1,14 @@
 package com.vanessagl2.dojo.model;
 
-import java.util.ArrayList;
+import java.util.List;
 
 interface VendingMachineState {
 
-  void setupCurrentMoneyAndProductAmount(ArrayList<String> coins, ArrayList<String> products);
+  void setupCurrentMoneyAmount(List<String> coins);
 
-  void insertMoneyAndSelectProduct(ArrayList<Coin> coins, Product product);
+  void setupCurrentProductAmount(List<String> products);
+
+  void insertMoneyAndSelectProduct(List<String> coins, String product);
 
   void dispenseProduct();
 }

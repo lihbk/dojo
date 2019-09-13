@@ -1,6 +1,8 @@
 package com.vanessagl2.dojo.model;
 
-import java.util.ArrayList;
+import java.util.List;
+
+import static java.util.Objects.isNull;
 
 public class InsertMoneyAndDispenseProductState implements VendingMachineState  {
 
@@ -11,13 +13,26 @@ public class InsertMoneyAndDispenseProductState implements VendingMachineState  
   }
 
   @Override
-  public void setupCurrentMoneyAndProductAmount(ArrayList<String> coins, ArrayList<String> products) {
+  public void setupCurrentMoneyAmount(List<String> coins) {
 
   }
 
   @Override
-  public void insertMoneyAndSelectProduct(ArrayList<Coin> coins, Product product) {
+  public void setupCurrentProductAmount(List<String> products) {
 
+  }
+
+  @Override
+  public void insertMoneyAndSelectProduct(List<String> coins, String productString) {
+    vendingMachine.insertCoins(coins, false);
+    Product product = vendingMachine.retrieveProduct(productString);
+
+    vendingMachine.printDisplayMessage();
+
+    if(isNull(product)) {
+      vendingMachine.updateDisplayMessage("$ INSERT COIN OR HIT COIN-RETURN");
+      vendingMachine.printDisplayMessage();
+    }
   }
 
   @Override

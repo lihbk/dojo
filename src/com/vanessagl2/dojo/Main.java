@@ -4,6 +4,7 @@ import com.vanessagl2.dojo.model.VendingMachine;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -26,31 +27,27 @@ public class Main {
 
         while (true) {
             if (!isSetUp) {
-                System.out.println("$ CURRENT BALANCE IS 0. SETUP IS REQUIRED");
                 input = in.nextLine();
                 String matchedInputCoin = matchInputToSetupPattern(input);
-                System.out.println(matchedInputCoin);
-                ArrayList coinList = new ArrayList(Arrays.asList(matchedInputCoin));
+                String[] coins = matchedInputCoin.split(",");
+                List coinList = new ArrayList(Arrays.asList(coins));
+                vendingMachine.setupCurrentMoneyAmount(coinList);
 
-                System.out.println("$ CURRENT AMOUNT OF PRODUCTS ARE []. SETUP IS REQUIRED");
                 input = in.nextLine();
                 String matchedInputProduct = matchInputToSetupPattern(input);
-                System.out.println(matchedInputProduct);
-                ArrayList productList = new ArrayList(Arrays.asList(matchedInputProduct));
-
-                vendingMachine.setupCurrentMoneyAndProductAmount(coinList, productList);
+                String[] products = matchedInputProduct.split(",");
+                ArrayList productList = new ArrayList(Arrays.asList(products));
+                vendingMachine.setupCurrentProductAmount(productList);
 
                 isSetUp = true;
 
             } else {
-                System.out.println("$ INSERT COIN AND PRODUCT");
                 input = in.nextLine();
                 ArrayList<String> matchedInput = matchInputToPattern(input);
                 String[] coins = matchedInput.get(0).split(",");
                 ArrayList coinList = new ArrayList(Arrays.asList(coins));
 
-                System.out.println(matchedInput.get(0));
-                System.out.println(matchedInput.get(1));
+                vendingMachine.insertMoneyAndSelectProduct(coinList, matchedInput.get(1));
             }
         }
     }
@@ -65,6 +62,10 @@ public class Main {
 
         coinString = coinString.replaceAll(" ", "");
         actionString = actionString.trim();
+
+        if(actionString.contains("GET-")) {
+            actionString = actionString.replace("GET-", "");
+        }
 
         result.add(coinString);
         result.add(actionString);

@@ -4,9 +4,9 @@ import java.math.BigDecimal;
 
 public enum Coin {
 
-  NICKEL("N", new BigDecimal("0.05")),
-  DIME("D", new BigDecimal("0.1")),
-  QUARTER("Q", new BigDecimal("0.25"));
+  Q("Q", new BigDecimal("0.25")),
+  D("D", new BigDecimal("0.1")),
+  N("N", new BigDecimal("0.05"));
 
   private String name;
 
@@ -18,6 +18,8 @@ public enum Coin {
   }
 
   public BigDecimal getAmount() { return amount; }
+
+  public String getName() { return name; }
 
   public static Coin getValueOf(String coinName) {
     for (Coin coin : Coin.values()) {
