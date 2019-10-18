@@ -6,11 +6,12 @@ import java.util.Arrays;
 import java.util.List;
 
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
 public class VendingMachine implements VendingMachineState {
 
-  private BigDecimal currentAmount;
-  private BigDecimal availableAmount;
+  private BigDecimal amountOfMoneyInsertedByBuyer;
+  private BigDecimal availableAmountOfMoneyAfterSetup;
   private String displayMessage;
   private List<Coin> availableCoins;
   private List<String> invalidCoins;
@@ -26,8 +27,8 @@ public class VendingMachine implements VendingMachineState {
     vendingMachineState = new InitialSetupState(this);
     availableCoins = new ArrayList<>();
     invalidCoins = new ArrayList<>();
-    availableAmount = new BigDecimal("0");
-    currentAmount = new BigDecimal("0");
+    availableAmountOfMoneyAfterSetup = new BigDecimal("0");
+    amountOfMoneyInsertedByBuyer = new BigDecimal("0");
     availableProducts = new ArrayList<>();
   }
 
@@ -65,39 +66,45 @@ public class VendingMachine implements VendingMachineState {
   public void insertCoins(List<String> coins, boolean isSetup) {
     for (String coinString:coins) {
       Coin coin = Coin.getValueOf(coinString);
-      if (!isNull(coin)) {
+      if (nonNull(coin)) {
         availableCoins.add(coin);
-        updateAmount(coin, isSetup);
+        updateAmountOfMoneyInsideMachine(coin, isSetup);
       } else {
         invalidCoins.add(coinString);
       }
     }
   }
 
-  public BigDecimal updateAmount(Coin coin, boolean isSetup) {
+//  public List<String> getInvalidCoins(List<String> coins) {
+//    List<String> invalidCoins = Coin.getInvalidCoins(coins);
+//    return invalidCoins;
+//  }
+//
+//  public ArrayList<Coin> getValidCoins(List<String> coins) {
+//    ArrayList<Coin> validCoins = Coin.getValidCoins(coins);
+//    return validCoins;
+//  }
+//
+//  public void insertValidCoins(List<Coin> coins) {
+//    coins.forEach(coin->availableCoins.add(coin));
+//  }
+//
+//  public void updateAmountOfMoneyInsideMachineDuringSetup(List<Coin> coins) {
+//    coins.forEach(coin->availableAmountOfMoneyAfterSetup.add(coin.getAmount()));
+//  }
+//
+//  public void updateAmountOfMoneyInsertedByBuyer(List<Coin> coins) {
+//    coins.forEach(coin->amountOfMoneyInsertedByBuyer.add(coin.getAmount()));
+//  }
+
+  public BigDecimal updateAmountOfMoneyInsideMachine(Coin coin, boolean isSetup) {
     if (isSetup) {
-      availableAmount = availableAmount.add(coin.getAmount());
-      return availableAmount;
+      availableAmountOfMoneyAfterSetup = availableAmountOfMoneyAfterSetup.add(coin.getAmount());
+      return availableAmountOfMoneyAfterSetup;
     } else {
-      currentAmount = currentAmount.add(coin.getAmount());
-      return currentAmount;
+      amountOfMoneyInsertedByBuyer = amountOfMoneyInsertedByBuyer.add(coin.getAmount());
+      return amountOfMoneyInsertedByBuyer;
     }
-  }
-
-  public List<Coin> getAvailableCoins() {
-    return availableCoins;
-  }
-
-  public List<String> getInvalidCoins() {
-    return invalidCoins;
-  }
-
-  public BigDecimal getCurrentAmount() {
-    return currentAmount;
-  }
-
-  public BigDecimal getAvailableAmount() {
-    return availableAmount;
   }
 
   public void insertProducts(List<String> products) {
@@ -109,15 +116,11 @@ public class VendingMachine implements VendingMachineState {
     }
   }
 
-  public List<Product> getAvailableProducts() {
-    return availableProducts;
-  }
-
   public Product retrieveProduct(String productName) {
     Product requestedProduct;
     try {
       requestedProduct = Product.getValueOf(productName);
-      if(getCurrentAmount().compareTo(requestedProduct.getPrice()) >= 0) {
+      if(getAmountOfMoneyInsertedByBuyer().compareTo(requestedProduct.getPrice()) >= 0) {
         updateDisplayMessageWithProduct(true, requestedProduct);
         subtractProductPriceFromCurrentAmount(requestedProduct);
         return requestedProduct;
@@ -130,31 +133,19 @@ public class VendingMachine implements VendingMachineState {
   }
 
   public void subtractProductPriceFromCurrentAmount(Product product) {
-    currentAmount = currentAmount.subtract(product.getPrice());
-  }
-
-  public String getDisplayMessage() {
-    return displayMessage;
+    amountOfMoneyInsertedByBuyer = amountOfMoneyInsertedByBuyer.subtract(product.getPrice());
   }
 
   public void updateDisplayMessageWithProduct(Boolean isEnoughMoney, Product product) {
     if(isEnoughMoney) {
       displayMessage = product.getName();
     } else {
-      displayMessage = "PRICE: " + product.getPrice() + ", BALANCE: " + getCurrentAmount();
+      displayMessage = "PRICE: " + product.getPrice() + ", BALANCE: " + getAmountOfMoneyInsertedByBuyer();
     }
   }
 
-  public void updateDisplayMessage(String displayMessage) {
-    this.displayMessage = displayMessage;
-  }
-
-  public void printDisplayMessage() {
-    System.out.println(getDisplayMessage());
-  }
-
   public void getCoinChange(Coin coin, List<Coin> coinChange) {
-    BigDecimal amount = this.getCurrentAmount();
+    BigDecimal amount = this.getAmountOfMoneyInsertedByBuyer();
     List<Coin> coins = this.getAvailableCoins();
 
     long coinAmount = coins.stream().filter( c -> c.getName() == coin.getName() ).count();
@@ -167,7 +158,7 @@ public class VendingMachine implements VendingMachineState {
         coinChangeAmount = new BigDecimal(coinAmount);
       }
       amount = amount.subtract(coinChangeAmount.multiply(coin.getAmount()));
-      this.updateAmount(amount);
+      this.updateAmountOfMoneyInsertedByBuyer(amount);
     }
 
     if(coinChangeAmount.intValue() > 0) {
@@ -189,7 +180,37 @@ public class VendingMachine implements VendingMachineState {
     return changeString;
   }
 
-  public void updateAmount(BigDecimal amount) {
-    this.currentAmount = amount;
+  public void updateAmountOfMoneyInsertedByBuyer(BigDecimal amount) {
+    this.amountOfMoneyInsertedByBuyer = amount;
+  }
+
+  public List<Coin> getAvailableCoins() { return availableCoins; }
+
+  public List<String> getInvalidCoins() {
+    return invalidCoins;
+  }
+
+  public BigDecimal getAmountOfMoneyInsertedByBuyer() {
+    return amountOfMoneyInsertedByBuyer;
+  }
+
+  public BigDecimal getAvailableAmountOfMoneyAfterSetup() {
+    return availableAmountOfMoneyAfterSetup;
+  }
+
+  public void updateDisplayMessage(String displayMessage) {
+    this.displayMessage = displayMessage;
+  }
+
+  public String getDisplayMessage() {
+    return displayMessage;
+  }
+
+  public void printDisplayMessage() {
+    System.out.println(getDisplayMessage());
+  }
+
+  public List<Product> getAvailableProducts() {
+    return availableProducts;
   }
 }

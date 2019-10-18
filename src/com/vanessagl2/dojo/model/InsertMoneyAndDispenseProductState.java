@@ -33,6 +33,9 @@ public class InsertMoneyAndDispenseProductState implements VendingMachineState  
       vendingMachine.updateDisplayMessage("$ INSERT COIN OR HIT COIN-RETURN");
       vendingMachine.printDisplayMessage();
     }
+
+    vendingMachine.updateDisplayMessage(vendingMachine.getChange());
+    vendingMachine.printDisplayMessage();
   }
 
   @Override

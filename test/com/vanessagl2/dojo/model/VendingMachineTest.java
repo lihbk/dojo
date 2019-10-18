@@ -27,6 +27,9 @@ class VendingMachineTest {
   @Mock
   private VendingMachine vendingMachine;
 
+  @Mock
+  private InsertMoneyAndDispenseProductState insertMoneyAndDispenseProductState;
+
   @BeforeEach
   void setUp() {
     doCallRealMethod().when(vendingMachine).setInitialState();
@@ -54,9 +57,9 @@ class VendingMachineTest {
     doCallRealMethod().when(vendingMachine).getAvailableCoins();
 
     ArrayList<Coin> expectedAvailableCoins = new ArrayList<>();
-    expectedAvailableCoins.add(Coin.D);
-    expectedAvailableCoins.add(Coin.Q);
-    expectedAvailableCoins.add(Coin.N);
+    expectedAvailableCoins.add(Coin.DIME);
+    expectedAvailableCoins.add(Coin.QUARTER);
+    expectedAvailableCoins.add(Coin.NICKEL);
 
     vendingMachine.insertCoins(coins, true);
 
@@ -95,13 +98,13 @@ class VendingMachineTest {
     coins.add("N");
 
     doCallRealMethod().when(vendingMachine).insertCoins(coins, true);
-    doCallRealMethod().when(vendingMachine).getAvailableAmount();
-    doCallRealMethod().when(vendingMachine).updateAmount(any(), any(boolean.class));
+    doCallRealMethod().when(vendingMachine).getAvailableAmountOfMoneyAfterSetup();
+    doCallRealMethod().when(vendingMachine).updateAmountOfMoneyInsideMachine(any(), any(boolean.class));
 
     vendingMachine.insertCoins(coins, true);
 
     BigDecimal expectedAmount = new BigDecimal("0.40");
-    BigDecimal actualAmount = vendingMachine.getAvailableAmount();
+    BigDecimal actualAmount = vendingMachine.getAvailableAmountOfMoneyAfterSetup();
 
     assertEquals(expectedAmount, actualAmount);
   }
@@ -131,7 +134,7 @@ class VendingMachineTest {
   @ParameterizedTest
   @MethodSource("productParams")
   void shouldDispenseColGivenColaIsSelectedAndThereIsEnoughMoney(String productName, Product product) {
-    when(vendingMachine.getCurrentAmount()).thenReturn(new BigDecimal("10"));
+    when(vendingMachine.getAmountOfMoneyInsertedByBuyer()).thenReturn(new BigDecimal("10"));
     when(vendingMachine.retrieveProduct(productName)).thenCallRealMethod();
 
     Product expectedProduct = product;
@@ -143,7 +146,7 @@ class VendingMachineTest {
   @ParameterizedTest
   @MethodSource("productParams")
   void shouldDisplayMessageWithProductNameGivenProductHasBeenDispensed(String productName, Product product) {
-    when(vendingMachine.getCurrentAmount()).thenReturn(new BigDecimal("10"));
+    when(vendingMachine.getAmountOfMoneyInsertedByBuyer()).thenReturn(new BigDecimal("10"));
     when(vendingMachine.retrieveProduct(productName)).thenCallRealMethod();
     doCallRealMethod().when(vendingMachine).updateDisplayMessageWithProduct(true, product);
     when(vendingMachine.getDisplayMessage()).thenCallRealMethod();
@@ -159,7 +162,7 @@ class VendingMachineTest {
   @ParameterizedTest
   @MethodSource("productParams")
   void shouldDisplayMessageWithProductPriceAndCurrentBalanceGivenThereIsNotEnoughMoneyToDispenseProduct(String productName, Product product) {
-    when(vendingMachine.getCurrentAmount()).thenReturn(new BigDecimal("0"));
+    when(vendingMachine.getAmountOfMoneyInsertedByBuyer()).thenReturn(new BigDecimal("0"));
     when(vendingMachine.retrieveProduct(productName)).thenCallRealMethod();
     doCallRealMethod().when(vendingMachine).updateDisplayMessageWithProduct(false, product);
     when(vendingMachine.getDisplayMessage()).thenCallRealMethod();
@@ -182,7 +185,7 @@ class VendingMachineTest {
 
   @Test
   void shouldCallUpdateCurrentAmountGivenProductIsSelectedAndThereIsEnoughMoneyToBuyProduct() {
-    when(vendingMachine.getCurrentAmount()).thenReturn(new BigDecimal("1"));
+    when(vendingMachine.getAmountOfMoneyInsertedByBuyer()).thenReturn(new BigDecimal("1"));
     when(vendingMachine.retrieveProduct("COLA")).thenCallRealMethod();
 
     vendingMachine.retrieveProduct("COLA");
@@ -192,18 +195,18 @@ class VendingMachineTest {
 
   @Test
   void shouldUpdateCurrentAmountGivenProductIsSelectedAndThereIsEnoughMoneyToBuyProduct() {
-    when(vendingMachine.updateAmount(Coin.Q, false)).thenCallRealMethod();
+    when(vendingMachine.updateAmountOfMoneyInsideMachine(Coin.QUARTER, false)).thenCallRealMethod();
     doCallRealMethod().when(vendingMachine).subtractProductPriceFromCurrentAmount(Product.COLA);
-    when(vendingMachine.getCurrentAmount()).thenCallRealMethod();
+    when(vendingMachine.getAmountOfMoneyInsertedByBuyer()).thenCallRealMethod();
 
     for(int i = 0; i < 6; i++) {
-      vendingMachine.updateAmount(Coin.Q, false);
+      vendingMachine.updateAmountOfMoneyInsideMachine(Coin.QUARTER, false);
     }
 
     vendingMachine.subtractProductPriceFromCurrentAmount(Product.COLA);
 
     BigDecimal expectedAmount = new BigDecimal("0.50");
-    BigDecimal actualAmount = vendingMachine.getCurrentAmount();
+    BigDecimal actualAmount = vendingMachine.getAmountOfMoneyInsertedByBuyer();
 
     assertEquals(expectedAmount, actualAmount);
   }
@@ -211,12 +214,12 @@ class VendingMachineTest {
   @Test
   void shouldInformCurrentBalanceMessageGivenMoneySetupIsCompleted() {
     List<Coin> coins = new ArrayList<>();
-    coins.add(Coin.D);
-    coins.add(Coin.Q);
-    coins.add(Coin.N);
-    coins.add(Coin.D);
-    coins.add(Coin.Q);
-    coins.add(Coin.N);
+    coins.add(Coin.DIME);
+    coins.add(Coin.QUARTER);
+    coins.add(Coin.NICKEL);
+    coins.add(Coin.DIME);
+    coins.add(Coin.QUARTER);
+    coins.add(Coin.NICKEL);
 
     List<String> coinsString = new ArrayList<>();
     coinsString.add("D");
@@ -227,7 +230,7 @@ class VendingMachineTest {
     coinsString.add("N");
 
     doCallRealMethod().when(vendingMachine).setupCurrentMoneyAmount(any());
-    when(vendingMachine.getAvailableAmount()).thenReturn(new BigDecimal("0.80"));
+    when(vendingMachine.getAvailableAmountOfMoneyAfterSetup()).thenReturn(new BigDecimal("0.80"));
     when(vendingMachine.getAvailableCoins()).thenReturn(coins);
     doCallRealMethod().when(vendingMachine).updateDisplayMessage(any());
     doCallRealMethod().when(vendingMachine).getDisplayMessage();
@@ -305,20 +308,20 @@ class VendingMachineTest {
   @Test
   void shouldReturnChangeGivenMoneyAddedWasMoreThanNecessary() {
     List<Coin> availableCoins = new ArrayList<>();
-    availableCoins.add(Coin.Q);
-    availableCoins.add(Coin.Q);
-    availableCoins.add(Coin.Q);
-    availableCoins.add(Coin.Q);
-    availableCoins.add(Coin.D);
-    availableCoins.add(Coin.N);
-    availableCoins.add(Coin.N);
-    availableCoins.add(Coin.N);
-    availableCoins.add(Coin.N);
+    availableCoins.add(Coin.QUARTER);
+    availableCoins.add(Coin.QUARTER);
+    availableCoins.add(Coin.QUARTER);
+    availableCoins.add(Coin.QUARTER);
+    availableCoins.add(Coin.DIME);
+    availableCoins.add(Coin.NICKEL);
+    availableCoins.add(Coin.NICKEL);
+    availableCoins.add(Coin.NICKEL);
+    availableCoins.add(Coin.NICKEL);
 
-    when(vendingMachine.getCurrentAmount()).thenReturn(new BigDecimal("0.70")).thenCallRealMethod().thenCallRealMethod();
+    when(vendingMachine.getAmountOfMoneyInsertedByBuyer()).thenReturn(new BigDecimal("0.70")).thenCallRealMethod().thenCallRealMethod();
     when(vendingMachine.getAvailableCoins()).thenReturn(availableCoins);
     doCallRealMethod().when(vendingMachine).getCoinChange(any(), any());
-    doCallRealMethod().when(vendingMachine).updateAmount(any());
+    doCallRealMethod().when(vendingMachine).updateAmountOfMoneyInsertedByBuyer(any());
     when(vendingMachine.getChange()).thenCallRealMethod();
 
     String expectedChange = "Q, Q, D, N, N";
@@ -329,11 +332,13 @@ class VendingMachineTest {
 
   @Test
   void shouldCallGetChangeGivenThereIsChangeAfterPurchase() {
-    when(vendingMachine.getCurrentAmount()).thenReturn(new BigDecimal("10"));
+    //doCallRealMethod().when(insertMoneyAndDispenseProductState).insertMoneyAndSelectProduct();
+    when(vendingMachine.getAmountOfMoneyInsertedByBuyer()).thenReturn(new BigDecimal("10"));
     when(vendingMachine.retrieveProduct("COLA")).thenCallRealMethod();
 
     vendingMachine.retrieveProduct("COLA");
 
     verify(vendingMachine).getChange();
   }
+
 }
